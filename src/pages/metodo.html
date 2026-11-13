@@ -1,0 +1,18 @@
+<section class="hero small"><div class="wrap"><h1>{{metodo.title}}</h1></div></section>
+
+<section><div class="wrap">
+  <ol class="steps">
+    {{#each metodo.steps}}
+    <li><div><h2 class="h3">{{.title}}</h2><p>{{.text}}</p></div></li>
+    {{/each}}
+  </ol>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <h2>{{metodo.sectorsTitle}}</h2>
+  <ul class="chips">
+    {{#each metodo.sectors}}
+    <li>{{.name}}</li>
+    {{/each}}
+  </ul>
+</div></section>

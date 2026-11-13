@@ -1,0 +1,25 @@
+<section class="hero"><div class="wrap">
+  <h1>{{home.title}}</h1>
+  <p>{{home.lead}}</p>
+  <a class="btn" href="{{{page.base}}}/contatti/">{{home.cta}}</a>
+</div></section>
+
+<section><div class="wrap">
+  <p class="eyebrow">{{home.introEyebrow}}</p>
+  <h2>{{home.introTitle}}</h2>
+  <p class="lead">{{home.introText}}</p>
+  <div class="grid3">
+    {{#each home.pillars}}
+    <div class="tile"><div class="ico">{{{svg .icon}}}</div><h3>{{.title}}</h3><p>{{.text}}</p></div>
+    {{/each}}
+  </div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+  <h2>{{home.whyTitle}}</h2>
+  <div class="why">
+    {{#each home.why}}
+    <div><h3>{{.title}}</h3><p>{{.text}}</p></div>
+    {{/each}}
+  </div>
+</div></section>
