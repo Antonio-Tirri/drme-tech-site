@@ -249,10 +249,12 @@
         if (isGlyph && glyphLevel > 0.05) {
           // LED della "d": bianchi, con alone blu.
           const g = glyphLevel;
+          // Pixel quadrati quasi a contatto, come nel logo, con la stessa sfumatura luminosa.
+          const side = P * (0.55 + 0.27 * g);
           ctx.fillStyle = rgba(WHITE, (0.25 + g * 0.75) * dim);
           ctx.shadowColor = rgba(BLUE, g * dim);
-          ctx.shadowBlur = 12 * g;
-          ctx.beginPath(); ctx.arc(x, y, 3.2 + g * 2.2, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 14 * g;
+          ctx.fillRect(x - side / 2, y - side / 2, side, side);
           ctx.shadowBlur = 0;
         } else if (v > 0.05) {
           ctx.fillStyle = rgba(BLUE, (0.35 + v * 0.65) * dim);
@@ -269,13 +271,13 @@
       // Scritta del marchio sotto la "d", bianca, che compare con lei.
       if (glyph && BRAND && glyphLevel > 0.05) {
         const cx = x0 + (glyph.c0 + 2) * P;
-        const ty = y0 + (glyph.r0 + 6) * P + P * 1.15;
-        const target = 8 * P;
-        let size = 10;
+        const ty = y0 + (glyph.r0 + 6) * P + P * 1.1;
+        const target = 13 * P;
+        let size = 12;
         ctx.textAlign = "center";
         ctx.textBaseline = "top";
         if ("letterSpacing" in ctx) ctx.letterSpacing = "0.12em";
-        for (; size < 28; size++) {
+        for (; size < 40; size++) {
           ctx.font = `700 ${size + 1}px Poppins, system-ui, sans-serif`;
           if (ctx.measureText(BRAND).width > target) break;
         }
