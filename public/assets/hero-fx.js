@@ -29,7 +29,7 @@
 
   function setup(hero, index) {
     const canvas = document.createElement("canvas");
-    canvas.className = "hero-fx";
+    canvas.className = "hero-fx hero-fx-live";
     canvas.setAttribute("aria-hidden", "true");
     // Posizionamento essenziale scritto qui e non solo nel CSS: se il foglio di stile
     // manca o è vecchio, il canvas resta comunque fuori dal flusso e non può far crescere il banner.
@@ -37,19 +37,34 @@
     if (getComputedStyle(hero).position === "static") hero.style.position = "relative";
     hero.style.overflow = "hidden";
     hero.style.isolation = "isolate";
+    // Due livelli: sotto lo sfondo statico (disegnato solo al ridimensionamento),
+    // sopra le luci animate su fondo trasparente. A ogni fotogramma si ridisegnano solo le luci.
+    const traceLayer = document.createElement("canvas");
+    traceLayer.className = "hero-fx hero-fx-static";
+    traceLayer.setAttribute("aria-hidden", "true");
+    Object.assign(traceLayer.style, { position: "absolute", inset: "0", zIndex: "-2", display: "block", pointerEvents: "none" });
     hero.prepend(canvas);
+    hero.prepend(traceLayer);
     hero.classList.add("fx-on");
 
     const ctx = canvas.getContext("2d");
     const small = hero.classList.contains("small");
-    const traceLayer = document.createElement("canvas");
     const tctx = traceLayer.getContext("2d");
 
-    let W = 0, H = 0, dpr = 1;
+    let W = 0, H = 0, dpr = 1, veilMax = 0.82, veilW = 1;
+    // Le luci animate stanno sopra il velo: le attenuiamo con la stessa sfumatura.
+    const veilAt = (x) => 1 - veilMax * Math.max(0, 1 - x / veilW);
     let traces = [], pulses = [], leds = [], matrix = null;
     let pointer = { x: -1e4, y: -1e4, active: false };
     let running = false, raf = 0, last = 0, t = 0, visible = true;
-    let glyphTimer = 3, glyphLevel = 0;
+    let glyphLevel = 0, glyph = null, targets = null, sprites = null;
+    // Ciclo della "d": dissolvenza in 1,4 s, accesa 3,6 s, dissolvenza out 1,6 s, spenta.
+    const CYCLE = 10, IN = 1.4, HOLD = 5, OUT = 6.6, T0 = 2;
+    const smooth = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
+    const glyphAt = (time) => {
+      const ph = (time + CYCLE - T0) % CYCLE;
+      return ph < IN ? smooth(0, IN, ph) : ph < HOLD ? 1 : ph < OUT ? 1 - smooth(HOLD, OUT, ph) : 0;
+    };
 
     function build() {
       const r = hero.getBoundingClientRect();
@@ -60,8 +75,7 @@
         c.width = W * dpr;
         c.height = H * dpr;
       }
-      canvas.style.width = W + "px";
-      canvas.style.height = H + "px";
+      for (const c of [canvas, traceLayer]) { c.style.width = W + "px"; c.style.height = H + "px"; }
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       tctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
@@ -94,6 +108,11 @@
 
       // Livello statico delle piste: disegnato una volta sola.
       tctx.clearRect(0, 0, W, H);
+      const bgr = tctx.createLinearGradient(0, 0, 0, H);
+      bgr.addColorStop(0, rgba(NIGHT, 1));
+      bgr.addColorStop(1, rgba([NIGHT[0] + 6, NIGHT[1] + 10, NIGHT[2] + 22], 1));
+      tctx.fillStyle = bgr;
+      tctx.fillRect(0, 0, W, H);
       tctx.lineWidth = 2;
       tctx.lineJoin = "round";
       for (const tr of traces) {
@@ -107,6 +126,7 @@
         }
       }
 
+
       // Matrice LED: a destra su desktop, sfondo leggero su telefono.
       const P = small ? 20 : 22;
       const narrow = W < 720;
@@ -117,6 +137,26 @@
       matrix = { x0: mx0, y0: my0, P, cols: mcols, rows: mrows, dim: narrow ? 0.45 : 1 };
       leds = new Float32Array(mcols * mrows);
       for (let i = 0; i < leds.length; i++) leds[i] = rand() < 0.08 ? rand() : 0;
+
+      targets = new Float32Array(mcols * mrows);
+      // LED spenti: statici, disegnati una volta nello sfondo (sotto il velo).
+      tctx.fillStyle = rgba(BLUE, 0.16 * matrix.dim);
+      tctx.beginPath();
+      for (let r = 0; r < mrows; r++) for (let c = 0; c < mcols; c++) {
+        const x = mx0 + c * P, y = my0 + r * P;
+        tctx.moveTo(x + 3, y); tctx.arc(x, y, 3, 0, Math.PI * 2);
+      }
+      tctx.fill();
+      // Velo a sinistra (leggibilità dei testi), cotto nello sfondo statico.
+      veilMax = W < 720 ? 0.72 : 0.82;
+      veilW = W * 0.62;
+      const vg = tctx.createLinearGradient(0, 0, veilW, 0);
+      vg.addColorStop(0, rgba(NIGHT, veilMax));
+      vg.addColorStop(1, rgba(NIGHT, 0));
+      tctx.fillStyle = vg;
+      tctx.fillRect(0, 0, W, H);
+      glyph = glyphCells();
+      sprites = makeSprites(P);
 
       pulses = [];
       const pc = Math.max(4, Math.round(traces.length * 0.35));
@@ -141,6 +181,56 @@
       return tr.pts[tr.pts.length - 1];
     }
 
+    // Sprite luminosi disegnati una volta sola: niente ombre calcolate a ogni fotogramma.
+    function sprite(sizeCss, paint) {
+      const c = document.createElement("canvas");
+      c.width = c.height = Math.ceil(sizeCss * dpr);
+      const g = c.getContext("2d");
+      g.setTransform(dpr, 0, 0, dpr, 0, 0);
+      paint(g, sizeCss / 2);
+      return { c, half: sizeCss / 2 };
+    }
+    function makeSprites(P) {
+      // LED rotondo blu: nucleo + alone sfumato.
+      const led = sprite(34, (g, h) => {
+        const halo = g.createRadialGradient(h, h, 0, h, h, h);
+        halo.addColorStop(0, rgba(BLUE, 0.55));
+        halo.addColorStop(0.35, rgba(BLUE, 0.22));
+        halo.addColorStop(1, rgba(BLUE, 0));
+        g.fillStyle = halo; g.fillRect(0, 0, 2 * h, 2 * h);
+        const core = g.createRadialGradient(h - 1, h - 1, 0, h, h, 5.6);
+        core.addColorStop(0, rgba([Math.min(255, BLUE[0] + 90), Math.min(255, BLUE[1] + 90), 255], 1));
+        core.addColorStop(1, rgba(BLUE, 1));
+        g.fillStyle = core; g.beginPath(); g.arc(h, h, 5.4, 0, Math.PI * 2); g.fill();
+      });
+      // Cella quadrata bianca accesa, come un pixel del logo dietro un diffusore:
+      // centro bianco pieno, bordi che sfumano nel blu, alone blu tutto intorno.
+      const side = P * 0.84;
+      const pix = sprite(P * 2.6, (g, h) => {
+        const halo = g.createRadialGradient(h, h, side * 0.3, h, h, h);
+        halo.addColorStop(0, rgba(BLUE, 0.6));
+        halo.addColorStop(0.45, rgba(BLUE, 0.2));
+        halo.addColorStop(1, rgba(BLUE, 0));
+        g.fillStyle = halo; g.fillRect(0, 0, 2 * h, 2 * h);
+        const cell = g.createRadialGradient(h, h, 0, h, h, side * 0.72);
+        cell.addColorStop(0, rgba(WHITE, 1));
+        cell.addColorStop(0.55, rgba(WHITE, 0.95));
+        cell.addColorStop(1, rgba([Math.round((WHITE[0] + BLUE[0]) / 2), Math.round((WHITE[1] + BLUE[1]) / 2), 255], 0.85));
+        g.fillStyle = cell;
+        const r = Math.min(3, side * 0.14);
+        const x = h - side / 2, y = h - side / 2;
+        g.beginPath();
+        g.moveTo(x + r, y); g.arcTo(x + side, y, x + side, y + side, r); g.arcTo(x + side, y + side, x, y + side, r);
+        g.arcTo(x, y + side, x, y, r); g.arcTo(x, y, x + side, y, r); g.closePath(); g.fill();
+      });
+      return { led, pix };
+    }
+    function blit(sp, x, y, alpha) {
+      if (alpha <= 0.01) return;
+      ctx.globalAlpha = Math.min(1, alpha);
+      ctx.drawImage(sp.c, x - sp.half, y - sp.half, sp.half * 2, sp.half * 2);
+    }
+
     function glyphCells() {
       const { cols, rows, dim } = matrix;
       // Su schermi stretti la matrice sta dietro ai testi: niente "d" né scritta, per non disturbare la lettura.
@@ -162,28 +252,28 @@
       t += dt;
       const { x0, y0, P, cols, rows } = matrix;
 
-      // Onda diagonale che attraversa la matrice + scintille casuali.
+      // Onda diagonale + scintille + cursore danno un "obiettivo" di luminosità;
+      // ogni LED ci arriva con salita rapida ma graduale e si spegne lentamente.
       const span = cols + rows;
       const wave = ((t * 9) % (span + 14)) - 7;
+      const rise = Math.min(1, dt * 14), fall = Math.exp(-dt * 2.4);
       for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
         const i = r * cols + c;
-        let v = leds[i] * Math.exp(-dt * 2.6);
+        let tg = targets[i] * Math.exp(-dt * 6);
         const dist = Math.abs(c + r - wave);
-        if (dist < 1.2 && ((c * 7 + r * 13) % 5) < 2) v = Math.max(v, 0.85);
-        if (Math.random() < dt * 0.05) v = Math.max(v, 0.4 + Math.random() * 0.5);
+        if (dist < 1.2 && ((c * 7 + r * 13) % 5) < 2) tg = Math.max(tg, 0.85 * (1 - dist / 1.2) + 0.15);
+        if (Math.random() < dt * 0.05) tg = Math.max(tg, 0.4 + Math.random() * 0.5);
         if (pointer.active) {
           const px = x0 + c * P, py = y0 + r * P;
           const pd = Math.hypot(px - pointer.x, py - pointer.y);
-          if (pd < 80) v = Math.max(v, 1 - pd / 80);
+          if (pd < 80) tg = Math.max(tg, 1 - pd / 80);
         }
-        leds[i] = v;
+        targets[i] = tg;
+        const v = leds[i];
+        leds[i] = tg > v ? v + (tg - v) * rise : v * fall;
       }
 
-      // La "d" compare ogni ~9 s per circa 3 s.
-      glyphTimer -= dt;
-      if (glyphTimer < 0) glyphTimer = 9;
-      const target = glyphTimer > 6 ? 1 : 0;
-      glyphLevel += (target - glyphLevel) * Math.min(1, dt * 3);
+      glyphLevel = glyphAt(t);
 
       for (const p of pulses) {
         p.d += p.v * dt;
@@ -198,14 +288,7 @@
     function draw() {
       ctx.clearRect(0, 0, W, H);
 
-      // Fondo: notte con leggera sfumatura verso il basso.
-      const bg = ctx.createLinearGradient(0, 0, 0, H);
-      bg.addColorStop(0, rgba(NIGHT, 1));
-      bg.addColorStop(1, rgba([NIGHT[0] + 6, NIGHT[1] + 10, NIGHT[2] + 22], 1));
-      ctx.fillStyle = bg;
-      ctx.fillRect(0, 0, W, H);
 
-      ctx.drawImage(traceLayer, 0, 0, W, H);
 
       // Via illuminati dove arriva un impulso o passa il cursore.
       for (const tr of traces) {
@@ -217,59 +300,44 @@
             if (pd < 90) glow = Math.max(glow, 1 - pd / 90);
           }
         }
-        if (glow > 0.02) {
-          ctx.fillStyle = rgba(BLUE, glow * 0.9);
-          ctx.shadowColor = rgba(BLUE, glow);
-          ctx.shadowBlur = 14 * glow;
-          ctx.beginPath(); ctx.arc(end[0], end[1], 4.5, 0, Math.PI * 2); ctx.fill();
-          ctx.shadowBlur = 0;
-        }
+        if (glow > 0.02) blit(sprites.led, end[0], end[1], glow * 0.9 * veilAt(end[0]));
       }
 
+      ctx.globalAlpha = 1;
       // Impulsi: testa luminosa con scia.
       for (const p of pulses) {
         for (let k = 0; k < 6; k++) {
           const d = p.d - k * 6;
           if (d < 0) break;
           const [x, y] = pointAt(p.tr, d);
-          ctx.fillStyle = k === 0 ? rgba(WHITE, 0.9) : rgba(BLUE, 0.6 * (1 - k / 6));
+          const vf = veilAt(x);
+          ctx.fillStyle = k === 0 ? rgba(WHITE, 0.9 * vf) : rgba(BLUE, 0.6 * (1 - k / 6) * vf);
           ctx.beginPath(); ctx.arc(x, y, k === 0 ? 2.2 : 2.6 - k * 0.3, 0, Math.PI * 2); ctx.fill();
         }
       }
 
       // Matrice LED.
       const { x0, y0, P, cols, rows, dim } = matrix;
-      const glyph = glyphLevel > 0.02 ? glyphCells() : null;
+      const g = glyph ? glyphLevel : 0;
+
+
+      // LED accesi: luminosità = trasparenza dello sprite, quindi dissolvenze continue.
       for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
         const i = r * cols + c;
-        let v = leds[i];
-        const isGlyph = glyph && glyph.has(i);
-        if (glyph) v = isGlyph ? Math.max(v, glyphLevel) : v * (1 - glyphLevel * 0.7);
         const x = x0 + c * P, y = y0 + r * P;
-        if (isGlyph && glyphLevel > 0.05) {
-          // LED della "d": bianchi, con alone blu.
-          const g = glyphLevel;
-          // Pixel quadrati quasi a contatto, come nel logo, con la stessa sfumatura luminosa.
-          const side = P * (0.55 + 0.27 * g);
-          ctx.fillStyle = rgba(WHITE, (0.25 + g * 0.75) * dim);
-          ctx.shadowColor = rgba(BLUE, g * dim);
-          ctx.shadowBlur = 14 * g;
-          ctx.fillRect(x - side / 2, y - side / 2, side, side);
-          ctx.shadowBlur = 0;
-        } else if (v > 0.05) {
-          ctx.fillStyle = rgba(BLUE, (0.35 + v * 0.65) * dim);
-          ctx.shadowColor = rgba(BLUE, v * dim);
-          ctx.shadowBlur = 10 * v;
-          ctx.beginPath(); ctx.arc(x, y, 3.2 + v * 2.2, 0, Math.PI * 2); ctx.fill();
-          ctx.shadowBlur = 0;
+        const vf = veilAt(x) * dim;
+        if (glyph && glyph.has(i)) {
+          // Dissolvenza incrociata: il LED rotondo blu lascia il posto alla cella quadrata bianca.
+          blit(sprites.led, x, y, leds[i] * (1 - g) * vf);
+          blit(sprites.pix, x, y, g * vf);
         } else {
-          ctx.fillStyle = rgba(BLUE, 0.16 * dim);
-          ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
+          blit(sprites.led, x, y, leds[i] * (1 - 0.6 * g) * vf);
         }
       }
+      ctx.globalAlpha = 1;
 
       // Scritta del marchio sotto la "d", bianca, che compare con lei.
-      if (glyph && BRAND && glyphLevel > 0.05) {
+      if (glyph && BRAND && g > 0.01) {
         const cx = x0 + (glyph.c0 + 2) * P;
         const ty = y0 + (glyph.r0 + 6) * P + P * 1.1;
         const target = 13 * P;
@@ -284,19 +352,14 @@
         ctx.font = `700 ${size}px Poppins, system-ui, sans-serif`;
         // Fascia scura dietro la scritta: i LED spenti non disturbano la lettura.
         const tw = ctx.measureText(BRAND).width;
-        ctx.fillStyle = rgba(NIGHT, 0.9 * glyphLevel);
+        ctx.fillStyle = rgba(NIGHT, 0.9 * g);
         ctx.fillRect(cx - tw / 2 - 8, ty - 4, tw + 16, size + 10);
-        ctx.fillStyle = rgba(WHITE, glyphLevel * dim);
+        ctx.fillStyle = rgba(WHITE, g * dim);
         ctx.fillText(BRAND, cx, ty);
         if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
       }
 
-      // Velo a sinistra per mantenere leggibile il testo.
-      const veil = ctx.createLinearGradient(0, 0, W * 0.62, 0);
-      veil.addColorStop(0, rgba(NIGHT, W < 720 ? 0.72 : 0.82));
-      veil.addColorStop(1, rgba(NIGHT, 0));
-      ctx.fillStyle = veil;
-      ctx.fillRect(0, 0, W, H);
+
     }
 
     function frame(now) {
@@ -320,7 +383,6 @@
 
     function staticFrame() {
       glyphLevel = 1;
-      glyphTimer = 7;
       draw();
     }
 

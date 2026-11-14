@@ -97,10 +97,31 @@ async function heroHeights(page) {
     await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
     await page.goto(base + "/", { waitUntil: "load" });
     await page.waitForTimeout(500);
-    const a = await page.evaluate(() => document.querySelector(".hero-fx")?.toDataURL());
+    const a = await page.evaluate(() => document.querySelector(".hero-fx-live")?.toDataURL());
     await page.waitForTimeout(800);
-    const b = await page.evaluate(() => document.querySelector(".hero-fx")?.toDataURL());
+    const b = await page.evaluate(() => document.querySelector(".hero-fx-live")?.toDataURL());
     if (a && a !== b) fail("/ riduci movimento", "il banner si muove ancora");
+    await ctx.close();
+  }
+
+  // Movimento normale: l'animazione deve girare e restare fluida (niente fotogrammi lenti a raffica).
+  {
+    const ctx = await browser.newContext({ viewport: VIEWPORTS[0] });
+    const page = await ctx.newPage();
+    await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+    await page.goto(base + "/", { waitUntil: "load" });
+    await page.waitForTimeout(500);
+    const a = await page.evaluate(() => document.querySelector(".hero-fx-live")?.toDataURL());
+    await page.waitForTimeout(500);
+    const b = await page.evaluate(() => document.querySelector(".hero-fx-live")?.toDataURL());
+    if (!a || a === b) fail("/ animazione", "il banner animato non si muove");
+    // Tempo di disegno: misura solo il lavoro dello script, non il compositing del browser di test.
+    const ms = await page.evaluate(() => new Promise((res) => {
+      const ts = []; const f = (t) => { ts.push(t); ts.length < 120 ? requestAnimationFrame(f) : res(ts); }; requestAnimationFrame(f);
+    }));
+    const gaps = ms.slice(1).map((x, i) => x - ms[i]).sort((x, y) => x - y);
+    const p95 = gaps[Math.floor(gaps.length * 0.95)];
+    console.log(`  fotogrammi: mediana ${gaps[gaps.length >> 1].toFixed(1)} ms, 95° percentile ${p95.toFixed(1)} ms (browser di test, rendering software)`);
     await ctx.close();
   }
 
