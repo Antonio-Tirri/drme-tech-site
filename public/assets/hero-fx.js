@@ -18,6 +18,8 @@
   const rgba = (c, a) => `rgba(${c[0]},${c[1]},${c[2]},${a})`;
 
   const reduce = matchMedia("(prefers-reduced-motion: reduce)");
+  // Nome del marchio: arriva dai testi del sito (locales/*.json → data-brand sul <body>).
+  const BRAND = document.body.dataset.brand || "";
 
 
   // Generatore pseudo-casuale con seme: stesso disegno a ogni caricamento.
@@ -140,7 +142,9 @@
     }
 
     function glyphCells() {
-      const { cols, rows } = matrix;
+      const { cols, rows, dim } = matrix;
+      // Su schermi stretti la matrice sta dietro ai testi: niente "d" né scritta, per non disturbare la lettura.
+      if (dim < 1) return null;
       // Esattamente la "d" pixel del logo: 5 colonne × 7 righe, un LED per pixel.
       const D = ["....#", "....#", "#####", "#...#", "#...#", "#...#", "#####"];
       const gw = 5, gh = 7;
@@ -150,6 +154,7 @@
       D.forEach((row, gy) => [...row].forEach((ch, gx) => {
         if (ch === "#") set.add((r0 + gy) * cols + (c0 + gx));
       }));
+      set.c0 = c0; set.r0 = r0;
       return set;
     }
 
@@ -238,9 +243,18 @@
       for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
         const i = r * cols + c;
         let v = leds[i];
-        if (glyph) v = glyph.has(i) ? Math.max(v, glyphLevel) : v * (1 - glyphLevel * 0.7);
+        const isGlyph = glyph && glyph.has(i);
+        if (glyph) v = isGlyph ? Math.max(v, glyphLevel) : v * (1 - glyphLevel * 0.7);
         const x = x0 + c * P, y = y0 + r * P;
-        if (v > 0.05) {
+        if (isGlyph && glyphLevel > 0.05) {
+          // LED della "d": bianchi, con alone blu.
+          const g = glyphLevel;
+          ctx.fillStyle = rgba(WHITE, (0.25 + g * 0.75) * dim);
+          ctx.shadowColor = rgba(BLUE, g * dim);
+          ctx.shadowBlur = 12 * g;
+          ctx.beginPath(); ctx.arc(x, y, 3.2 + g * 2.2, 0, Math.PI * 2); ctx.fill();
+          ctx.shadowBlur = 0;
+        } else if (v > 0.05) {
           ctx.fillStyle = rgba(BLUE, (0.35 + v * 0.65) * dim);
           ctx.shadowColor = rgba(BLUE, v * dim);
           ctx.shadowBlur = 10 * v;
@@ -250,6 +264,29 @@
           ctx.fillStyle = rgba(BLUE, 0.16 * dim);
           ctx.beginPath(); ctx.arc(x, y, 3, 0, Math.PI * 2); ctx.fill();
         }
+      }
+
+      // Scritta del marchio sotto la "d", bianca, che compare con lei.
+      if (glyph && BRAND && glyphLevel > 0.05) {
+        const cx = x0 + (glyph.c0 + 2) * P;
+        const ty = y0 + (glyph.r0 + 6) * P + P * 1.15;
+        const target = 8 * P;
+        let size = 10;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "top";
+        if ("letterSpacing" in ctx) ctx.letterSpacing = "0.12em";
+        for (; size < 28; size++) {
+          ctx.font = `700 ${size + 1}px Poppins, system-ui, sans-serif`;
+          if (ctx.measureText(BRAND).width > target) break;
+        }
+        ctx.font = `700 ${size}px Poppins, system-ui, sans-serif`;
+        // Fascia scura dietro la scritta: i LED spenti non disturbano la lettura.
+        const tw = ctx.measureText(BRAND).width;
+        ctx.fillStyle = rgba(NIGHT, 0.9 * glyphLevel);
+        ctx.fillRect(cx - tw / 2 - 8, ty - 4, tw + 16, size + 10);
+        ctx.fillStyle = rgba(WHITE, glyphLevel * dim);
+        ctx.fillText(BRAND, cx, ty);
+        if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
       }
 
       // Velo a sinistra per mantenere leggibile il testo.
@@ -292,6 +329,7 @@
 
     // Ricostruisce solo se la dimensione cambia davvero (evita cicli di ridimensionamento).
     let lastSize = "";
+    document.fonts?.ready.then(() => { if (!running && matrix) draw(); });
     new ResizeObserver(() => {
       const r = hero.getBoundingClientRect();
       const size = Math.round(r.width) + "x" + Math.round(r.height);
