@@ -31,6 +31,12 @@
     const canvas = document.createElement("canvas");
     canvas.className = "hero-fx";
     canvas.setAttribute("aria-hidden", "true");
+    // Posizionamento essenziale scritto qui e non solo nel CSS: se il foglio di stile
+    // manca o è vecchio, il canvas resta comunque fuori dal flusso e non può far crescere il banner.
+    Object.assign(canvas.style, { position: "absolute", inset: "0", zIndex: "-1", display: "block", pointerEvents: "none" });
+    if (getComputedStyle(hero).position === "static") hero.style.position = "relative";
+    hero.style.overflow = "hidden";
+    hero.style.isolation = "isolate";
     hero.prepend(canvas);
     hero.classList.add("fx-on");
 
@@ -287,7 +293,15 @@
       if (reduce.matches) { stop(); staticFrame(); } else { draw(); start(); }
     }
 
-    new ResizeObserver(() => refresh()).observe(hero);
+    // Ricostruisce solo se la dimensione cambia davvero (evita cicli di ridimensionamento).
+    let lastSize = "";
+    new ResizeObserver(() => {
+      const r = hero.getBoundingClientRect();
+      const size = Math.round(r.width) + "x" + Math.round(r.height);
+      if (size === lastSize) return;
+      lastSize = size;
+      refresh();
+    }).observe(hero);
     new IntersectionObserver(([e]) => {
       visible = e.isIntersecting;
       visible ? start() : stop();
@@ -301,6 +315,5 @@
     });
     hero.addEventListener("pointerleave", () => (pointer.active = false));
 
-    refresh();
   }
 })();

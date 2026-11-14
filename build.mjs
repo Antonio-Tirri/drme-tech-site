@@ -3,6 +3,7 @@
 // Uso: node build.mjs
 import { readFileSync, writeFileSync, mkdirSync, rmSync, cpSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
+import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 
 const ROOT = dirname(fileURLToPath(import.meta.url));
@@ -88,6 +89,11 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 cpSync(join(ROOT, "public"), OUT, { recursive: true });
 
+// Cache busting: ogni CSS/JS in /assets/ riceve ?v=<hash del contenuto>,
+// così il browser non mescola mai una pagina nuova con file vecchi in cache.
+const assetHash = (f) => createHash("sha256").update(readFileSync(join(ROOT, "public/assets", f))).digest("hex").slice(0, 10);
+const versioned = (html) => html.replace(/(["'])\/assets\/([\w.-]+\.(?:css|js))\1/g, (_, q, f) => `${q}/assets/${f}?v=${assetHash(f)}${q}`);
+
 const layout = read("src/layout.html");
 const placeholders = [];
 let count = 0;
@@ -116,7 +122,7 @@ for (const lang of LANGS) {
     };
     const data = { ...t, page, site: SITE };
     page.body = render(read(`src/pages/${pg.key}.html`), data, where);
-    const html = render(layout, data, where);
+    const html = versioned(render(layout, data, where));
     for (const m of html.matchAll(/\[\[[^\]]+\]\]/g)) placeholders.push(`${where}: ${m[0]}`);
     const dir = join(OUT, href(lang, pg.slug));
     mkdirSync(dir, { recursive: true });
