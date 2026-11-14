@@ -19,8 +19,6 @@
 
   const reduce = matchMedia("(prefers-reduced-motion: reduce)");
 
-  // "d" del logo: 5×7 pixel, tratto singolo.
-  const GLYPH = ["....#", "....#", "#####", "#...#", "#...#", "#...#", "#####"];
 
   // Generatore pseudo-casuale con seme: stesso disegno a ogni caricamento.
   const rng = (seed) => () => ((seed = (seed * 1664525 + 1013904223) >>> 0) / 4294967296);
@@ -143,16 +141,17 @@
 
     function glyphCells() {
       const { cols, rows } = matrix;
-      const S = cols >= 16 && rows >= 18 ? 2 : 1;
-      const gw = 5 * S, gh = 7 * S;
-      if (cols < gw + 2 || rows < gh + 2) return null;
+      // Ingrandimento S: la forma si allarga ma il tratto resta di UN solo LED,
+      // come la "d" del logo (5×7 a S=1, 9×13 a S=2).
+      const S = Math.min(2, Math.floor((cols - 3) / 4), Math.floor((rows - 3) / 6));
+      if (S < 1) return null;
+      const gw = 4 * S + 1, gh = 6 * S + 1;
       const c0 = Math.floor((cols - gw) / 2), r0 = Math.floor((rows - gh) / 2);
       const set = new Set();
-      GLYPH.forEach((row, gy) => [...row].forEach((ch, gx) => {
-        if (ch !== "#") return;
-        for (let sy = 0; sy < S; sy++) for (let sx = 0; sx < S; sx++)
-          set.add((r0 + gy * S + sy) * cols + (c0 + gx * S + sx));
-      }));
+      const on = (gx, gy) => set.add((r0 + gy) * cols + (c0 + gx));
+      for (let y = 0; y < gh; y++) on(gw - 1, y);            // asta a destra, a tutta altezza
+      for (let x = 0; x < gw; x++) { on(x, 2 * S); on(x, gh - 1); } // lato alto e basso della pancia
+      for (let y = 2 * S; y < gh; y++) on(0, y);             // lato sinistro della pancia
       return set;
     }
 
