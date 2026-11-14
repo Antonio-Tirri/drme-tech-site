@@ -39,5 +39,4 @@ Cloudflare Pages, progetto `drme-tech-site`:
 - `main` → produzione `www.drme.tech`; ogni PR → anteprima con URL proprio.
 
 ## Segnaposto aperti
-- `contatti.place` → `[[CITTÀ]]` / `[[CITY]]`
 - Alias `info@drme.tech` da creare in Google Workspace (Admin → Utenti → a.tirri → Indirizzi email alternativi).
