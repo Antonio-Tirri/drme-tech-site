@@ -107,7 +107,9 @@ for (const lang of LANGS) {
       const cur = p.key === pg.key ? ' aria-current="page" class="on"' : "";
       return `<a href="${href(lang, p.slug)}"${cur}>${esc(t.nav[p.key])}</a>`;
     }).join("");
-    const title = pg.key === "home" ? `${t.meta.siteName} · ${t.meta.tagline}` : `${t[pg.key].title} · ${t.meta.siteName}`;
+    const title = pg.key === "home"
+      ? `${t.meta.siteName} · ${t.meta.brand} · ${t.meta.tagline}`
+      : `${t[pg.key].title} · ${t.meta.siteName} ${t.meta.brand}`;
     const page = {
       base: base(lang),
       homeHref: href(lang, ""),
@@ -120,6 +122,34 @@ for (const lang of LANGS) {
       altLang: alt,
       nav,
     };
+    // Dati strutturati (schema.org) per far riconoscere a Google l'azienda e il sito.
+    page.jsonld = JSON.stringify({
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": `${SITE.url}/#org`,
+          name: t.meta.siteName,
+          alternateName: [t.meta.brand, "drme"],
+          url: `${SITE.url}/`,
+          logo: `${SITE.url}/assets/favicon.png`,
+          image: `${SITE.url}/assets/og-image.png`,
+          description: t.meta.description,
+          address: { "@type": "PostalAddress", addressLocality: t.meta.city, addressCountry: t.meta.country },
+          areaServed: "Europe",
+          knowsAbout: t.meta.keywords.split(",").map((k) => k.trim()),
+        },
+        {
+          "@type": "WebSite",
+          "@id": `${SITE.url}/#website`,
+          name: t.meta.siteName,
+          alternateName: t.meta.brand,
+          url: `${SITE.url}/`,
+          inLanguage: t.meta.lang,
+          publisher: { "@id": `${SITE.url}/#org` },
+        },
+      ],
+    }).replace(/</g, "\\u003c");
     const data = { ...t, page, site: SITE };
     page.body = render(read(`src/pages/${pg.key}.html`), data, where);
     const html = versioned(render(layout, data, where));

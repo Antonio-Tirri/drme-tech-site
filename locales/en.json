@@ -3,8 +3,12 @@
     "lang": "en",
     "locale": "en_GB",
     "siteName": "drme.tech",
+    "brand": "drommer electronics",
     "tagline": "Custom electronics for one-of-a-kind vehicles",
     "description": "Electronic design, firmware and wiring harnesses for coachbuilding, prototypes and small series.",
+    "keywords": "automotive electronics, coachbuilding, prototypes, STM32 firmware, PCB, wiring harness, CAN, LIN, LED lighting, Turin",
+    "city": "Turin",
+    "country": "IT",
     "skip": "Skip to content",
     "langSwitch": "Italiano",
     "langSwitchLabel": "Switch to Italian"
@@ -23,49 +27,121 @@
     "introTitle": "One partner for the entire electrical system",
     "introText": "We design and integrate electrical and electronic systems for special vehicles: one-offs, prototypes, show cars, motorsport and limited series. From the circuit board to the harness, from firmware to road-ready.",
     "pillars": [
-      { "icon": "chip", "title": "Hardware", "text": "Custom electronic boards: schematics, PCB layout, prototypes and small production runs." },
-      { "icon": "code", "title": "Firmware", "text": "Embedded software on microcontrollers, CAN and LIN networks, diagnostics and test tools." },
-      { "icon": "wave", "title": "Integration", "text": "Vehicle harnesses, lighting, user interfaces and testing directly on the car." }
+      {
+        "icon": "chip",
+        "title": "Hardware",
+        "text": "Custom electronic boards: schematics, PCB layout, prototypes and small production runs."
+      },
+      {
+        "icon": "code",
+        "title": "Firmware",
+        "text": "Embedded software on microcontrollers, CAN and LIN networks, diagnostics and test tools."
+      },
+      {
+        "icon": "wave",
+        "title": "Integration",
+        "text": "Vehicle harnesses, lighting, user interfaces and testing directly on the car."
+      }
     ],
     "whyTitle": "Why work with us",
     "why": [
-      { "title": "One point of contact", "text": "From electrical architecture to final testing." },
-      { "title": "Prototype lead times", "text": "Fast iterations, without the rigidity of large suppliers." },
-      { "title": "Real-vehicle experience", "text": "Systems tested on the car, not just on the bench." },
-      { "title": "Complete documentation", "text": "Schematics, pinouts, bills of materials and assembly manuals." }
+      {
+        "title": "One point of contact",
+        "text": "From electrical architecture to final testing."
+      },
+      {
+        "title": "Prototype lead times",
+        "text": "Fast iterations, without the rigidity of large suppliers."
+      },
+      {
+        "title": "Real-vehicle experience",
+        "text": "Systems tested on the car, not just on the bench."
+      },
+      {
+        "title": "Complete documentation",
+        "text": "Schematics, pinouts, bills of materials and assembly manuals."
+      }
     ]
   },
   "servizi": {
     "title": "Services",
     "description": "Electronic design, STM32 firmware, CAN/LIN networks, vehicle harnesses, LED lighting, reverse engineering and testing.",
     "items": [
-      { "title": "Electronic design", "text": "Custom boards for control units, switch panels, steering wheels, lighting modules and interfaces. Schematics, multilayer PCB layout, 3D models for mechanical integration, production files and prototype management." },
-      { "title": "Embedded firmware", "text": "Development on STM32 microcontrollers: inputs and outputs, motor control, lighting animations, safety logic. Board bring-up, bootloaders and field updates." },
-      { "title": "CAN / LIN vehicle networks", "text": "Message and communication matrix definition, integration with existing ECUs, gateways between networks, monitoring and diagnostic tools." },
-      { "title": "Vehicle wiring harnesses", "text": "Electrical architecture, wiring diagrams, cable and protection sizing, connector selection, production and assembly documentation." },
-      { "title": "Lighting and LEDs", "text": "Functional lamps, animated lighting, LED walls and backlit surfaces for vehicles, show cars and exhibitions. Dedicated drivers, thermal and optical management." },
-      { "title": "Reverse engineering", "text": "Analysis of existing systems, communication protocol decoding, integration of series-production components into special projects." },
-      { "title": "Integration and testing", "text": "Installation on the vehicle, commissioning, fault diagnosis and support through to delivery." }
+      {
+        "title": "Electronic design",
+        "text": "Custom boards for control units, switch panels, steering wheels, lighting modules and interfaces. Schematics, multilayer PCB layout, 3D models for mechanical integration, production files and prototype management."
+      },
+      {
+        "title": "Embedded firmware",
+        "text": "Development on STM32 microcontrollers: inputs and outputs, motor control, lighting animations, safety logic. Board bring-up, bootloaders and field updates."
+      },
+      {
+        "title": "CAN / LIN vehicle networks",
+        "text": "Message and communication matrix definition, integration with existing ECUs, gateways between networks, monitoring and diagnostic tools."
+      },
+      {
+        "title": "Vehicle wiring harnesses",
+        "text": "Electrical architecture, wiring diagrams, cable and protection sizing, connector selection, production and assembly documentation."
+      },
+      {
+        "title": "Lighting and LEDs",
+        "text": "Functional lamps, animated lighting, LED walls and backlit surfaces for vehicles, show cars and exhibitions. Dedicated drivers, thermal and optical management."
+      },
+      {
+        "title": "Reverse engineering",
+        "text": "Analysis of existing systems, communication protocol decoding, integration of series-production components into special projects."
+      },
+      {
+        "title": "Integration and testing",
+        "text": "Installation on the vehicle, commissioning, fault diagnosis and support through to delivery."
+      }
     ]
   },
   "metodo": {
     "title": "How we work",
     "description": "Analysis, design, prototype, integration and documentation: the drme.tech method for special-vehicle electronics.",
     "steps": [
-      { "title": "Analysis", "text": "We start from the project's needs and its space, time and budget constraints, and define the electrical architecture together." },
-      { "title": "Design", "text": "Schematics, PCBs, firmware and harnesses developed in parallel, with 3D models shared with the mechanical and design teams." },
-      { "title": "Prototype", "text": "Building and bench-testing boards and subsystems, with fast iterations." },
-      { "title": "Integration", "text": "Installation on the vehicle, functional testing and fine-tuning." },
-      { "title": "Documentation", "text": "Schematics, pinouts, bills of materials and assembly instructions, ready for replicas or small series." }
+      {
+        "title": "Analysis",
+        "text": "We start from the project's needs and its space, time and budget constraints, and define the electrical architecture together."
+      },
+      {
+        "title": "Design",
+        "text": "Schematics, PCBs, firmware and harnesses developed in parallel, with 3D models shared with the mechanical and design teams."
+      },
+      {
+        "title": "Prototype",
+        "text": "Building and bench-testing boards and subsystems, with fast iterations."
+      },
+      {
+        "title": "Integration",
+        "text": "Installation on the vehicle, functional testing and fine-tuning."
+      },
+      {
+        "title": "Documentation",
+        "text": "Schematics, pinouts, bills of materials and assembly instructions, ready for replicas or small series."
+      }
     ],
     "sectorsTitle": "Sectors",
     "sectors": [
-      { "name": "Coachbuilding and one-offs" },
-      { "name": "Prototypes and concept cars" },
-      { "name": "Show cars and exhibitions" },
-      { "name": "Motorsport" },
-      { "name": "Limited series" },
-      { "name": "Special and electric vehicles" }
+      {
+        "name": "Coachbuilding and one-offs"
+      },
+      {
+        "name": "Prototypes and concept cars"
+      },
+      {
+        "name": "Show cars and exhibitions"
+      },
+      {
+        "name": "Motorsport"
+      },
+      {
+        "name": "Limited series"
+      },
+      {
+        "name": "Special and electric vehicles"
+      }
     ]
   },
   "contatti": {
