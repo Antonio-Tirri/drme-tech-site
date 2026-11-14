@@ -8,10 +8,13 @@ Precedenza: richiesta esplicita del titolare → questo file → `RULES.md`.
 In breve (il dettaglio è in `RULES.md`):
 1. Prima di modificare, spiega **cosa cambia per chi visita il sito** e quali pagine/lingue tocchi.
 2. Branch nuovo + Pull Request. **Mai push su `main`**, mai merge senza conferma del titolare.
-3. `npm run build` deve passare prima di aprire la PR.
+3. `npm run validate` deve passare prima di aprire la PR (build + controllo automatico in un browser vero:
+   errori JS, scorrimento orizzontale, banner stabile anche con CSS in cache, riduci movimento).
+   Lo stesso controllo gira su GitHub ("Controllo sito") a ogni PR: **niente merge se non è verde**.
 4. Controlla l'anteprima Cloudflare della PR (desktop, mobile, it + en) e riporta il link.
-5. Testi solo in `locales/*.json`, mai nei template o nel codice.
-6. Nessun nome di cliente, progetto riservato o dato personale del titolare sul sito.
+5. CSS e JS in `public/assets/` ricevono `?v=<hash>` automaticamente dalla build: non servono rinomine manuali.
+6. Testi solo in `locales/*.json`, mai nei template o nel codice.
+7. Nessun nome di cliente, progetto riservato o dato personale del titolare sul sito.
 
 ## Struttura
 ```
@@ -20,6 +23,7 @@ src/layout.html            struttura comune: <head>, barra, footer
 src/pages/<pagina>.html    corpo di ogni pagina (solo chiavi)
 public/                    copiato così com'è in dist/ (asset, _headers)
 build.mjs                  genera dist/ — nessuna dipendenza
+scripts/check.cjs          controllo automatico (richiede playwright, solo in locale/CI)
 ```
 
 Template: `{{chiave.percorso}}` (con escape), `{{{…}}}` (senza escape), `{{#each lista}}…{{/each}}` con `{{.campo}}`, `{{{svg .icon}}}`.
