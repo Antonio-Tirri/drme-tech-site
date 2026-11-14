@@ -3,8 +3,12 @@
     "lang": "it",
     "locale": "it_IT",
     "siteName": "drme.tech",
+    "brand": "drommer electronics",
     "tagline": "Elettronica su misura per veicoli unici",
     "description": "Progettazione elettronica, firmware e cablaggi per coachbuilding, prototipi e piccole serie.",
+    "keywords": "elettronica automotive, coachbuilding, prototipi, firmware STM32, PCB, cablaggi, CAN, LIN, illuminazione LED, Torino",
+    "city": "Torino",
+    "country": "IT",
     "skip": "Vai al contenuto",
     "langSwitch": "English",
     "langSwitchLabel": "Passa all'inglese"
@@ -23,49 +27,121 @@
     "introTitle": "Un unico interlocutore per tutta la parte elettrica",
     "introText": "Progettiamo e integriamo sistemi elettrici ed elettronici per veicoli speciali: one-off, prototipi, show car, motorsport e serie limitate. Dalla scheda elettronica al cablaggio, dal firmware alla messa in strada.",
     "pillars": [
-      { "icon": "chip", "title": "Hardware", "text": "Schede elettroniche custom: schematico, PCB, prototipi e piccole produzioni." },
-      { "icon": "code", "title": "Firmware", "text": "Software embedded su microcontrollori, reti CAN e LIN, diagnosi e strumenti di test." },
-      { "icon": "wave", "title": "Integrazione", "text": "Cablaggi veicolo, illuminazione, interfacce utente e collaudo direttamente sull'auto." }
+      {
+        "icon": "chip",
+        "title": "Hardware",
+        "text": "Schede elettroniche custom: schematico, PCB, prototipi e piccole produzioni."
+      },
+      {
+        "icon": "code",
+        "title": "Firmware",
+        "text": "Software embedded su microcontrollori, reti CAN e LIN, diagnosi e strumenti di test."
+      },
+      {
+        "icon": "wave",
+        "title": "Integrazione",
+        "text": "Cablaggi veicolo, illuminazione, interfacce utente e collaudo direttamente sull'auto."
+      }
     ],
     "whyTitle": "Perché lavorare con noi",
     "why": [
-      { "title": "Un solo referente", "text": "Dall'architettura elettrica al collaudo finale." },
-      { "title": "Tempi da prototipo", "text": "Iterazioni rapide, senza la rigidità delle grandi forniture." },
-      { "title": "Esperienza su veicoli reali", "text": "Sistemi collaudati sull'auto, non solo a banco." },
-      { "title": "Documentazione completa", "text": "Schemi, pinout, distinte e manuali di assemblaggio." }
+      {
+        "title": "Un solo referente",
+        "text": "Dall'architettura elettrica al collaudo finale."
+      },
+      {
+        "title": "Tempi da prototipo",
+        "text": "Iterazioni rapide, senza la rigidità delle grandi forniture."
+      },
+      {
+        "title": "Esperienza su veicoli reali",
+        "text": "Sistemi collaudati sull'auto, non solo a banco."
+      },
+      {
+        "title": "Documentazione completa",
+        "text": "Schemi, pinout, distinte e manuali di assemblaggio."
+      }
     ]
   },
   "servizi": {
     "title": "Servizi",
     "description": "Progettazione elettronica, firmware STM32, reti CAN/LIN, cablaggi veicolo, illuminazione LED, reverse engineering e collaudo.",
     "items": [
-      { "title": "Progettazione elettronica", "text": "Schede su misura per centraline, pannelli comandi, volanti, moduli luce e interfacce. Schematico, layout PCB multistrato, modelli 3D per l'integrazione meccanica, file di produzione e gestione dei prototipi." },
-      { "title": "Firmware embedded", "text": "Sviluppo su microcontrollori STM32: ingressi e uscite, controllo motori, animazioni luminose, logiche di sicurezza. Bring-up delle schede, bootloader e aggiornamento sul campo." },
-      { "title": "Reti di bordo CAN / LIN", "text": "Definizione dei messaggi e della matrice di comunicazione, integrazione con centraline esistenti, gateway tra reti diverse, strumenti di monitoraggio e diagnosi." },
-      { "title": "Cablaggi veicolo", "text": "Architettura elettrica, schemi di cablaggio, dimensionamento di cavi e protezioni, scelta dei connettori, documentazione per produzione e assemblaggio." },
-      { "title": "Illuminazione e LED", "text": "Luci funzionali, illuminazione animata, pareti LED e superfici retroilluminate per veicoli, show car ed esposizioni. Driver dedicati, gestione termica e ottica." },
-      { "title": "Reverse engineering", "text": "Analisi di sistemi esistenti, decodifica di protocolli di comunicazione, integrazione di componenti di serie in progetti speciali." },
-      { "title": "Integrazione e collaudo", "text": "Installazione sul veicolo, messa in funzione, diagnosi dei guasti e supporto fino alla consegna." }
+      {
+        "title": "Progettazione elettronica",
+        "text": "Schede su misura per centraline, pannelli comandi, volanti, moduli luce e interfacce. Schematico, layout PCB multistrato, modelli 3D per l'integrazione meccanica, file di produzione e gestione dei prototipi."
+      },
+      {
+        "title": "Firmware embedded",
+        "text": "Sviluppo su microcontrollori STM32: ingressi e uscite, controllo motori, animazioni luminose, logiche di sicurezza. Bring-up delle schede, bootloader e aggiornamento sul campo."
+      },
+      {
+        "title": "Reti di bordo CAN / LIN",
+        "text": "Definizione dei messaggi e della matrice di comunicazione, integrazione con centraline esistenti, gateway tra reti diverse, strumenti di monitoraggio e diagnosi."
+      },
+      {
+        "title": "Cablaggi veicolo",
+        "text": "Architettura elettrica, schemi di cablaggio, dimensionamento di cavi e protezioni, scelta dei connettori, documentazione per produzione e assemblaggio."
+      },
+      {
+        "title": "Illuminazione e LED",
+        "text": "Luci funzionali, illuminazione animata, pareti LED e superfici retroilluminate per veicoli, show car ed esposizioni. Driver dedicati, gestione termica e ottica."
+      },
+      {
+        "title": "Reverse engineering",
+        "text": "Analisi di sistemi esistenti, decodifica di protocolli di comunicazione, integrazione di componenti di serie in progetti speciali."
+      },
+      {
+        "title": "Integrazione e collaudo",
+        "text": "Installazione sul veicolo, messa in funzione, diagnosi dei guasti e supporto fino alla consegna."
+      }
     ]
   },
   "metodo": {
     "title": "Come lavoriamo",
     "description": "Analisi, progettazione, prototipo, integrazione e documentazione: il metodo drme.tech per l'elettronica di veicoli speciali.",
     "steps": [
-      { "title": "Analisi", "text": "Partiamo dalle esigenze del progetto e dai vincoli di spazio, tempi e budget. Definiamo insieme l'architettura elettrica." },
-      { "title": "Progettazione", "text": "Schemi, PCB, firmware e cablaggi sviluppati in parallelo, con modelli 3D condivisi con il team meccanico e di design." },
-      { "title": "Prototipo", "text": "Realizzazione e test a banco delle schede e dei sottosistemi, con iterazioni rapide." },
-      { "title": "Integrazione", "text": "Montaggio sul veicolo, collaudo funzionale e messa a punto." },
-      { "title": "Documentazione", "text": "Schemi, pinout, distinte materiali e istruzioni di assemblaggio, pronti per repliche o piccole serie." }
+      {
+        "title": "Analisi",
+        "text": "Partiamo dalle esigenze del progetto e dai vincoli di spazio, tempi e budget. Definiamo insieme l'architettura elettrica."
+      },
+      {
+        "title": "Progettazione",
+        "text": "Schemi, PCB, firmware e cablaggi sviluppati in parallelo, con modelli 3D condivisi con il team meccanico e di design."
+      },
+      {
+        "title": "Prototipo",
+        "text": "Realizzazione e test a banco delle schede e dei sottosistemi, con iterazioni rapide."
+      },
+      {
+        "title": "Integrazione",
+        "text": "Montaggio sul veicolo, collaudo funzionale e messa a punto."
+      },
+      {
+        "title": "Documentazione",
+        "text": "Schemi, pinout, distinte materiali e istruzioni di assemblaggio, pronti per repliche o piccole serie."
+      }
     ],
     "sectorsTitle": "Settori",
     "sectors": [
-      { "name": "Coachbuilding e fuoriserie" },
-      { "name": "Prototipi e concept car" },
-      { "name": "Show car ed esposizioni" },
-      { "name": "Motorsport" },
-      { "name": "Serie limitate" },
-      { "name": "Veicoli speciali ed elettrici" }
+      {
+        "name": "Coachbuilding e fuoriserie"
+      },
+      {
+        "name": "Prototipi e concept car"
+      },
+      {
+        "name": "Show car ed esposizioni"
+      },
+      {
+        "name": "Motorsport"
+      },
+      {
+        "name": "Serie limitate"
+      },
+      {
+        "name": "Veicoli speciali ed elettrici"
+      }
     ]
   },
   "contatti": {
