@@ -141,17 +141,15 @@
 
     function glyphCells() {
       const { cols, rows } = matrix;
-      // Ingrandimento S: la forma si allarga ma il tratto resta di UN solo LED,
-      // come la "d" del logo (5×7 a S=1, 9×13 a S=2).
-      const S = Math.min(2, Math.floor((cols - 3) / 4), Math.floor((rows - 3) / 6));
-      if (S < 1) return null;
-      const gw = 4 * S + 1, gh = 6 * S + 1;
+      // Esattamente la "d" pixel del logo: 5 colonne × 7 righe, un LED per pixel.
+      const D = ["....#", "....#", "#####", "#...#", "#...#", "#...#", "#####"];
+      const gw = 5, gh = 7;
+      if (cols < gw + 2 || rows < gh + 2) return null;
       const c0 = Math.floor((cols - gw) / 2), r0 = Math.floor((rows - gh) / 2);
       const set = new Set();
-      const on = (gx, gy) => set.add((r0 + gy) * cols + (c0 + gx));
-      for (let y = 0; y < gh; y++) on(gw - 1, y);            // asta a destra, a tutta altezza
-      for (let x = 0; x < gw; x++) { on(x, 2 * S); on(x, gh - 1); } // lato alto e basso della pancia
-      for (let y = 2 * S; y < gh; y++) on(0, y);             // lato sinistro della pancia
+      D.forEach((row, gy) => [...row].forEach((ch, gx) => {
+        if (ch === "#") set.add((r0 + gy) * cols + (c0 + gx));
+      }));
       return set;
     }
 
