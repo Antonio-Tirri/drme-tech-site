@@ -12,7 +12,7 @@ In breve (il dettaglio è in `RULES.md`):
    errori JS, scorrimento orizzontale, banner stabile anche con CSS in cache, riduci movimento).
    Lo stesso controllo gira su GitHub ("Controllo sito") a ogni PR: **niente merge se non è verde**.
 4. Controlla l'anteprima Cloudflare della PR (desktop, mobile, it + en) e riporta il link.
-5. CSS e JS in `public/assets/` ricevono `?v=<hash>` automaticamente dalla build: non servono rinomine manuali.
+5. CSS, JS e immagini in `public/assets/` ricevono `?v=<hash>` automaticamente dalla build: non servono rinomine manuali.
 6. Testi solo in `locales/*.json`, mai nei template o nel codice.
 7. Nessun nome di cliente, progetto riservato o dato personale del titolare sul sito.
 

@@ -89,10 +89,10 @@ rmSync(OUT, { recursive: true, force: true });
 mkdirSync(OUT, { recursive: true });
 cpSync(join(ROOT, "public"), OUT, { recursive: true });
 
-// Cache busting: ogni CSS/JS in /assets/ riceve ?v=<hash del contenuto>,
+// Cache busting: ogni CSS/JS/immagine in /assets/ riceve ?v=<hash del contenuto>,
 // così il browser non mescola mai una pagina nuova con file vecchi in cache.
 const assetHash = (f) => createHash("sha256").update(readFileSync(join(ROOT, "public/assets", f))).digest("hex").slice(0, 10);
-const versioned = (html) => html.replace(/(["'])\/assets\/([\w.-]+\.(?:css|js))\1/g, (_, q, f) => `${q}/assets/${f}?v=${assetHash(f)}${q}`);
+const versioned = (html) => html.replace(/(["'])\/assets\/([\w.-]+\.(?:css|js|png|jpg|svg))\1/g, (_, q, f) => `${q}/assets/${f}?v=${assetHash(f)}${q}`);
 
 const layout = read("src/layout.html");
 const placeholders = [];
