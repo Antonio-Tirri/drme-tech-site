@@ -57,7 +57,7 @@
     let traces = [], pulses = [], leds = [], matrix = null;
     let pointer = { x: -1e4, y: -1e4, active: false };
     let running = false, raf = 0, last = 0, t = 0, visible = true;
-    let glyphLevel = 0, glyph = null, targets = null, sprites = null;
+    let glyphLevel = 0, glyph = null, targets = null, sprites = null, logo = null, logoStatic = false;
     // Ciclo della "d": dissolvenza in 1,4 s, accesa 3,6 s, dissolvenza out 1,6 s, spenta.
     const CYCLE = 10, IN = 1.4, HOLD = 5, OUT = 6.6, T0 = 2;
     const smooth = (a, b, x) => { const k = Math.min(1, Math.max(0, (x - a) / (b - a))); return k * k * (3 - 2 * k); };
@@ -155,7 +155,8 @@
       vg.addColorStop(1, rgba(NIGHT, 0));
       tctx.fillStyle = vg;
       tctx.fillRect(0, 0, W, H);
-      glyph = glyphCells();
+      glyph = null;
+      logo = glyphCells() ? buildLogo() : null;
       sprites = makeSprites(P);
 
       pulses = [];
@@ -317,23 +318,112 @@
       i: ["#", ".", "#", "#", "#", "#", "#"],
       s: ["....", "....", "####", "#...", "####", "...#", "####"],
     };
-    function drawBrand(cx, top, maxW, alpha) {
-      const text = BRAND.toLowerCase();
-      if (![...text].every((ch) => ch === " " || FONT[ch])) return;
-      const cols = [...text].reduce((w, ch, k) => w + (ch === " " ? 3 : FONT[ch][0].length + (k < text.length - 1 && text[k + 1] !== " " ? 2 : 0)), 0);
-      const u = Math.max(1, Math.floor((maxW / cols) * 2) / 2);
-      const w = cols * u, x0 = Math.round(cx - w / 2), sq = Math.max(1, u * 0.72);
-      ctx.globalAlpha = 1;
-      ctx.fillStyle = rgba(NIGHT, 0.9 * alpha);
-      ctx.fillRect(x0 - 10, top - 6, w + 20, 7 * u + 12);
-      ctx.fillStyle = rgba(WHITE, alpha);
-      let x = x0;
+    // ---- Logo intero: geometria (stessa del file vettoriale) e animazione "LED che si accendono" ----
+    const LS = 0.68, LSD = 0.84, LDS = 1.3, LR = 0.2;
+    const DGL = ["...#", "...#", "####", "#..#", "#..#", "####"];
+    function wordCells(text, u, bigD) {
+      const base = 2 * u + (u - u * LS), out = [];
+      let x = 0, prev = null, n = 0;
       [...text].forEach((ch, k) => {
-        if (ch === " ") { x += 3 * u; return; }
-        const gl = FONT[ch];
-        gl.forEach((row, gy) => [...row].forEach((c, gx) => { if (c === "#") ctx.fillRect(x + gx * u, top + gy * u, sq, sq); }));
-        x += (gl[0].length + (k < text.length - 1 && text[k + 1] !== " " ? 2 : 0)) * u;
+        if (ch === " ") { x = prev + 4 * u; prev = null; return; }
+        const big = k === 0 && ch === "d" && bigD;
+        const gl = big ? DGL : FONT[ch], cell = big ? u * LDS : u, sq = cell * (big ? LSD : LS), eo = (cell - sq) / 2;
+        if (prev !== null) {
+          let gap = base * (1 - LR);
+          if (n === 1 && text[0] === "d" && bigD) gap += u * 0.35 * (LDS - 1) * 5 * (1 - LR);
+          x = prev + gap - eo;
+        }
+        const on = (gx, gy) => gl[gy] && gl[gy][gx] === "#";
+        gl.forEach((row, gy) => [...row].forEach((c, gx) => {
+          if (c !== "#") return;
+          const L = on(gx - 1, gy), R = on(gx + 1, gy), U = on(gx, gy - 1), D = on(gx, gy + 1);
+          let kind = "sq", rad = [0, 0, 0, 0];
+          if (big) kind = (L || R) && (U || D) ? "sq" : (L || R) ? "V" : "H";
+          else if ((L || R) && (U || D)) {
+            const k2 = sq * 0.85;
+            rad = [!U && !L ? k2 : 0, !U && !R ? k2 : 0, !D && !R ? k2 : 0, !D && !L ? k2 : 0];
+          } else rad = [sq * 0.12, sq * 0.12, sq * 0.12, sq * 0.12];
+          out.push({ x: x + gx * cell + eo, y: gy * cell + eo, s: sq, kind, rad, d: big, h: gl.length * cell });
+        }));
+        prev = x + gl[0].length * cell - eo; x += gl[0].length * cell; n++;
       });
+      const H = Math.max(...out.map((c) => c.h));
+      out.forEach((c) => (c.y += H - c.h));
+      return out;
+    }
+    const bounds = (cs) => {
+      const x0 = Math.min(...cs.map((c) => c.x)), y0 = Math.min(...cs.map((c) => c.y));
+      return { x0, y0, w: Math.max(...cs.map((c) => c.x + c.s)) - x0, h: Math.max(...cs.map((c) => c.y + c.s)) - y0 };
+    };
+    function buildLogo() {
+      const top = wordCells("drommer", 1, true), bt = bounds(top);
+      const el1 = wordCells("electronics", 1, false), k = bt.w / bounds(el1).w;
+      const el = wordCells("electronics", k, false), be = bounds(el);
+      const cells = [
+        ...top.map((c) => ({ ...c, x: c.x - bt.x0, y: c.y - bt.y0 })),
+        ...el.map((c) => ({ ...c, x: c.x - be.x0, y: c.y - be.y0 + bt.h + 1.6 })),
+      ];
+      const b = bounds(cells);
+      const width = Math.min(W * 0.34, 500), sc = width / b.w;
+      const cx = W * 0.74, cy = H * 0.5;
+      const ox = cx - width / 2, oy = cy - (b.h * sc) / 2;
+      cells.forEach((c) => {
+        c.x = ox + c.x * sc; c.y = oy + c.y * sc; c.s *= sc; c.rad = c.rad.map((r) => r * sc);
+        const nx = (c.x - ox) / width;
+        // Accensione da sinistra a destra con un po' di casualità, come una scheda che si inizializza.
+        c.on = 0.3 + nx * 1.7 + Math.random() * 0.45;
+        c.off = 6.4 + nx * 0.9 + Math.random() * 0.3;
+      });
+      const pad = 0.9 * sc * 2;
+      const glow = sprite(Math.max(8, cells.find((c) => c.d).s * 3.2), (g, h) => {
+        const gr = g.createRadialGradient(h, h, 0, h, h, h);
+        gr.addColorStop(0, rgba(BLUE, 0.55)); gr.addColorStop(0.5, rgba(BLUE, 0.16)); gr.addColorStop(1, rgba(BLUE, 0));
+        g.fillStyle = gr; g.fillRect(0, 0, 2 * h, 2 * h);
+      });
+      return { cells, panel: [ox - pad * 2.2, oy - pad * 2, width + pad * 4.4, b.h * sc + pad * 4], glow };
+    }
+    const LOGO_CYCLE = 10;
+    const GREY = [58, 66, 82];
+    function shape(c) {
+      const { x, y, s } = c;
+      if (c.kind === "sq") {
+        if (ctx.roundRect && c.rad.some((r) => r > 0)) { ctx.beginPath(); ctx.roundRect(x, y, s, s, c.rad); ctx.fill(); }
+        else ctx.fillRect(x, y, s, s);
+        return;
+      }
+      const n = 3, st = s / n, th = st * 0.62;
+      for (let i = 0; i < n; i++) {
+        if (c.kind === "V") ctx.fillRect(x + i * st, y, th, s);
+        else ctx.fillRect(x, y + i * st, s, th);
+      }
+    }
+    function drawLogo() {
+      const { cells, panel, glow } = logo;
+      const ph = logoStatic ? 3 : t % LOGO_CYCLE;
+      ctx.globalAlpha = 1;
+      // Pannello scuro: i LED del fondo non disturbano il logo.
+      ctx.fillStyle = rgba(NIGHT, 0.9);
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(...panel, 14); ctx.fill(); } else ctx.fillRect(...panel);
+      ctx.strokeStyle = rgba(BLUE, 0.22); ctx.lineWidth = 1;
+      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(...panel, 14); ctx.stroke(); }
+      for (const c of cells) {
+        const lv = smooth(c.on, c.on + 0.35, ph) * (1 - smooth(c.off, c.off + 0.6, ph));
+        // Pixel spento: grigio.
+        ctx.globalAlpha = 1 - lv;
+        ctx.fillStyle = rgba(GREY, 1);
+        shape(c);
+        if (lv <= 0.01) continue;
+        // Bagliore: forte nel momento in cui il pixel si accende, poi resta leggero.
+        const flash = Math.min(1, 4 * lv * (1 - lv)) * 0.9 + lv * (c.d ? 0.35 : 0.12);
+        if (flash > 0.02) {
+          ctx.globalAlpha = flash;
+          ctx.drawImage(glow.c, c.x + c.s / 2 - glow.half, c.y + c.s / 2 - glow.half, glow.half * 2, glow.half * 2);
+        }
+        ctx.globalAlpha = lv;
+        ctx.fillStyle = rgba(c.d ? BLUE : WHITE, 1);
+        shape(c);
+      }
+      ctx.globalAlpha = 1;
     }
 
     function draw() {
@@ -387,8 +477,8 @@
       }
       ctx.globalAlpha = 1;
 
-      // Scritta del marchio sotto la "d", nel carattere a pixel del logo.
-      if (glyph && BRAND && g > 0.01) drawBrand(x0 + (glyph.c0 + 2) * P - P / 2, y0 + (glyph.r0 + 6) * P + P * 0.9, 14 * P, g * dim);
+      // Logo intero su un pannello a LED: i pixel partono grigi e si accendono uno alla volta.
+      if (logo) drawLogo();
 
 
     }
@@ -414,11 +504,13 @@
 
     function staticFrame() {
       glyphLevel = 1;
+      logoStatic = true;
       draw();
     }
 
     function refresh() {
       build();
+      logoStatic = reduce.matches;
       if (reduce.matches) { stop(); staticFrame(); } else { draw(); start(); }
     }
 
