@@ -383,7 +383,7 @@
       return { cells, panel: [ox - pad * 2.2, oy - pad * 2, width + pad * 4.4, b.h * sc + pad * 4], glow };
     }
     const LOGO_CYCLE = 10;
-    const GREY = [58, 66, 82];
+    const GREY = [74, 84, 102];
     function shape(c) {
       const { x, y, s } = c;
       if (c.kind === "sq") {
@@ -401,11 +401,6 @@
       const { cells, panel, glow } = logo;
       const ph = logoStatic ? 3 : t % LOGO_CYCLE;
       ctx.globalAlpha = 1;
-      // Pannello scuro: i LED del fondo non disturbano il logo.
-      ctx.fillStyle = rgba(NIGHT, 0.9);
-      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(...panel, 14); ctx.fill(); } else ctx.fillRect(...panel);
-      ctx.strokeStyle = rgba(BLUE, 0.22); ctx.lineWidth = 1;
-      if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(...panel, 14); ctx.stroke(); }
       for (const c of cells) {
         const lv = smooth(c.on, c.on + 0.35, ph) * (1 - smooth(c.off, c.off + 0.6, ph));
         // Pixel spento: grigio.
@@ -466,7 +461,13 @@
       for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
         const i = r * cols + c;
         const x = x0 + c * P, y = y0 + r * P;
-        const vf = veilAt(x) * dim;
+        let vf = veilAt(x) * dim;
+        // Dietro al logo i LED del fondo restano quasi spenti, così il logo si legge senza riquadri.
+        if (logo) {
+          const [px, py, pw, ph] = logo.panel;
+          const dx = Math.max(px - x, 0, x - px - pw), dy = Math.max(py - y, 0, y - py - ph);
+          vf *= 0.12 + 0.88 * Math.min(1, Math.hypot(dx, dy) / (P * 3));
+        }
         if (glyph && glyph.has(i)) {
           // Dissolvenza incrociata: il LED rotondo blu lascia il posto alla cella della "d".
           blit(sprites.led, x, y, leds[i] * (1 - g) * vf);
