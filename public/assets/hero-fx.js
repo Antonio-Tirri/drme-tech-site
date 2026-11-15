@@ -223,7 +223,21 @@
         g.moveTo(x + r, y); g.arcTo(x + side, y, x + side, y + side, r); g.arcTo(x + side, y + side, x, y + side, r);
         g.arcTo(x, y + side, x, y, r); g.arcTo(x, y, x + side, y, r); g.closePath(); g.fill();
       });
-      return { led, pix };
+      // Celle a righe, come la "d" del logo: righe orizzontali sui tratti verticali, verticali su quelli orizzontali.
+      const lines = (vertical) => sprite(P * 2.6, (g, h) => {
+        const halo = g.createRadialGradient(h, h, side * 0.3, h, h, h);
+        halo.addColorStop(0, rgba(BLUE, 0.5));
+        halo.addColorStop(0.45, rgba(BLUE, 0.16));
+        halo.addColorStop(1, rgba(BLUE, 0));
+        g.fillStyle = halo; g.fillRect(0, 0, 2 * h, 2 * h);
+        g.fillStyle = rgba(WHITE, 0.97);
+        const x = h - side / 2, y = h - side / 2, n = 3, step = side / n, th = step * 0.62;
+        for (let i = 0; i < n; i++) {
+          if (vertical) g.fillRect(x + i * step, y, th, side);
+          else g.fillRect(x, y + i * step, side, th);
+        }
+      });
+      return { led, pix, pixH: lines(false), pixV: lines(true) };
     }
     function blit(sp, x, y, alpha) {
       if (alpha <= 0.01) return;
@@ -235,14 +249,18 @@
       const { cols, rows, dim } = matrix;
       // Su schermi stretti la matrice sta dietro ai testi: niente "d" né scritta, per non disturbare la lettura.
       if (dim < 1) return null;
-      // Esattamente la "d" pixel del logo: 5 colonne × 7 righe, un LED per pixel.
-      const D = ["....#", "....#", "#####", "#...#", "#...#", "#...#", "#####"];
-      const gw = 5, gh = 7;
+      // La "d" del logo: 4 colonne × 6 righe. Angoli pieni, tratti verticali a righe orizzontali,
+      // tratti orizzontali a righe verticali.
+      const D = ["...#", "...#", "####", "#..#", "#..#", "####"];
+      const gw = 4, gh = 6;
       if (cols < gw + 2 || rows < gh + 2) return null;
-      const c0 = Math.floor((cols - gw) / 2), r0 = Math.floor((rows - gh) / 2);
-      const set = new Set();
+      const c0 = Math.floor((cols - gw) / 2), r0 = Math.floor((rows - gh) / 2) - 1;
+      const on = (x, y) => D[y] && D[y][x] === "#";
+      const set = new Map();
       D.forEach((row, gy) => [...row].forEach((ch, gx) => {
-        if (ch === "#") set.add((r0 + gy) * cols + (c0 + gx));
+        if (ch !== "#") return;
+        const h = on(gx - 1, gy) || on(gx + 1, gy), v = on(gx, gy - 1) || on(gx, gy + 1);
+        set.set((r0 + gy) * cols + (c0 + gx), h && v ? "pix" : h ? "pixV" : "pixH");
       }));
       set.c0 = c0; set.r0 = r0;
       return set;
@@ -283,6 +301,39 @@
         }
       }
       for (const tr of traces) tr.flash = Math.max(0, tr.flash - dt * 1.8);
+    }
+
+    // Carattere a pixel del logo (7 righe; righe 0-1 aste, 2-6 minuscole).
+    const FONT = {
+      d: ["....#", "....#", "#####", "#...#", "#...#", "#...#", "#####"],
+      r: ["....", "....", "####", "#...", "#...", "#...", "#..."],
+      o: [".....", ".....", "#####", "#...#", "#...#", "#...#", "#####"],
+      m: [".....", ".....", "#####", "#.#.#", "#.#.#", "#.#.#", "#.#.#"],
+      e: [".....", ".....", "#####", "#...#", "#####", "#....", "#####"],
+      l: ["#", "#", "#", "#", "#", "#", "#"],
+      c: ["....", "....", "####", "#...", "#...", "#...", "####"],
+      t: [".#.", ".#.", "###", ".#.", ".#.", ".#.", ".##"],
+      n: ["....", "....", "####", "#..#", "#..#", "#..#", "#..#"],
+      i: ["#", ".", "#", "#", "#", "#", "#"],
+      s: ["....", "....", "####", "#...", "####", "...#", "####"],
+    };
+    function drawBrand(cx, top, maxW, alpha) {
+      const text = BRAND.toLowerCase();
+      if (![...text].every((ch) => ch === " " || FONT[ch])) return;
+      const cols = [...text].reduce((w, ch, k) => w + (ch === " " ? 3 : FONT[ch][0].length + (k < text.length - 1 && text[k + 1] !== " " ? 2 : 0)), 0);
+      const u = Math.max(1, Math.floor((maxW / cols) * 2) / 2);
+      const w = cols * u, x0 = Math.round(cx - w / 2), sq = Math.max(1, u * 0.72);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = rgba(NIGHT, 0.9 * alpha);
+      ctx.fillRect(x0 - 10, top - 6, w + 20, 7 * u + 12);
+      ctx.fillStyle = rgba(WHITE, alpha);
+      let x = x0;
+      [...text].forEach((ch, k) => {
+        if (ch === " ") { x += 3 * u; return; }
+        const gl = FONT[ch];
+        gl.forEach((row, gy) => [...row].forEach((c, gx) => { if (c === "#") ctx.fillRect(x + gx * u, top + gy * u, sq, sq); }));
+        x += (gl[0].length + (k < text.length - 1 && text[k + 1] !== " " ? 2 : 0)) * u;
+      });
     }
 
     function draw() {
@@ -327,37 +378,17 @@
         const x = x0 + c * P, y = y0 + r * P;
         const vf = veilAt(x) * dim;
         if (glyph && glyph.has(i)) {
-          // Dissolvenza incrociata: il LED rotondo blu lascia il posto alla cella quadrata bianca.
+          // Dissolvenza incrociata: il LED rotondo blu lascia il posto alla cella della "d".
           blit(sprites.led, x, y, leds[i] * (1 - g) * vf);
-          blit(sprites.pix, x, y, g * vf);
+          blit(sprites[glyph.get(i)], x, y, g * vf);
         } else {
           blit(sprites.led, x, y, leds[i] * (1 - 0.6 * g) * vf);
         }
       }
       ctx.globalAlpha = 1;
 
-      // Scritta del marchio sotto la "d", bianca, che compare con lei.
-      if (glyph && BRAND && g > 0.01) {
-        const cx = x0 + (glyph.c0 + 2) * P;
-        const ty = y0 + (glyph.r0 + 6) * P + P * 1.1;
-        const target = 13 * P;
-        let size = 12;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "top";
-        if ("letterSpacing" in ctx) ctx.letterSpacing = "0.12em";
-        for (; size < 40; size++) {
-          ctx.font = `700 ${size + 1}px Poppins, system-ui, sans-serif`;
-          if (ctx.measureText(BRAND).width > target) break;
-        }
-        ctx.font = `700 ${size}px Poppins, system-ui, sans-serif`;
-        // Fascia scura dietro la scritta: i LED spenti non disturbano la lettura.
-        const tw = ctx.measureText(BRAND).width;
-        ctx.fillStyle = rgba(NIGHT, 0.9 * g);
-        ctx.fillRect(cx - tw / 2 - 8, ty - 4, tw + 16, size + 10);
-        ctx.fillStyle = rgba(WHITE, g * dim);
-        ctx.fillText(BRAND, cx, ty);
-        if ("letterSpacing" in ctx) ctx.letterSpacing = "0px";
-      }
+      // Scritta del marchio sotto la "d", nel carattere a pixel del logo.
+      if (glyph && BRAND && g > 0.01) drawBrand(x0 + (glyph.c0 + 2) * P - P / 2, y0 + (glyph.r0 + 6) * P + P * 0.9, 14 * P, g * dim);
 
 
     }

@@ -16,7 +16,7 @@ const { chromium } = require("playwright");
 const DIST = path.join(__dirname, "..", "dist");
 const PAGES = ["/", "/servizi/", "/metodo/", "/contatti/", "/en/", "/en/servizi/", "/en/metodo/", "/en/contatti/"];
 const VIEWPORTS = [{ width: 1280, height: 800 }, { width: 400, height: 820 }];
-const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".jpg": "image/jpeg", ".xml": "application/xml", ".txt": "text/plain" };
+const TYPES = { ".html": "text/html", ".css": "text/css", ".js": "text/javascript", ".png": "image/png", ".svg": "image/svg+xml", ".jpg": "image/jpeg", ".xml": "application/xml", ".txt": "text/plain" };
 
 const server = http.createServer((req, res) => {
   let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
