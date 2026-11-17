@@ -7,6 +7,7 @@
 //   4. lo stesso, simulando un foglio di stile vecchio/assente in cache
 //   5. "riduci movimento": nessuna animazione in corso
 //   6. tutti i file /assets/ referenziati rispondono 200
+//   7. schermata d'ingresso: appare alla prima visita, si chiude con clic/Invio, non riappare nella sessione
 // Esce con codice 1 se un controllo fallisce.
 const http = require("node:http");
 const fs = require("node:fs");
@@ -107,6 +108,8 @@ async function heroHeights(page) {
   // Movimento normale: l'animazione deve girare e restare fluida (niente fotogrammi lenti a raffica).
   {
     const ctx = await browser.newContext({ viewport: VIEWPORTS[0] });
+    // Visitatore già entrato: niente schermata d'ingresso davanti al banner.
+    await ctx.addInitScript(() => sessionStorage.setItem("drme-ingresso", "1"));
     const page = await ctx.newPage();
     await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
     await page.goto(base + "/", { waitUntil: "load" });
@@ -125,6 +128,34 @@ async function heroHeights(page) {
     await ctx.close();
   }
 
+
+  // Schermata d'ingresso.
+  for (const reducedMotion of ["no-preference", "reduce"]) {
+    const where = `ingresso (${reducedMotion})`;
+    const ctx = await browser.newContext({ viewport: VIEWPORTS[1], reducedMotion });
+    const page = await ctx.newPage();
+    const errs = [];
+    page.on("pageerror", (e) => errs.push(e.message));
+    await page.route(/fonts\.(googleapis|gstatic)\.com/, (r) => r.abort());
+    await page.goto(base + "/servizi/", { waitUntil: "load" });
+    const shown = await page.evaluate(() => {
+      const b = document.getElementById("ingresso");
+      return !!b && getComputedStyle(b).display !== "none" && document.documentElement.classList.contains("ingresso-on");
+    });
+    if (!shown) fail(where, "non appare alla prima visita");
+    await page.waitForTimeout(reducedMotion === "reduce" ? 300 : 3600);
+    if (!(await page.evaluate(() => document.getElementById("ingresso")?.classList.contains("ready")))) fail(where, "la scritta per entrare non compare");
+    if (reducedMotion === "reduce") await page.click("#ingresso button"); else await page.keyboard.press("Enter");
+    await page.waitForTimeout(1000);
+    const gone = await page.evaluate(() => !document.getElementById("ingresso") && !document.documentElement.classList.contains("ingresso-on"));
+    if (!gone) fail(where, "non si chiude");
+    await page.goto(base + "/", { waitUntil: "load" });
+    const again = await page.evaluate(() => document.documentElement.classList.contains("ingresso-on"));
+    if (again) fail(where, "riappare nella stessa sessione");
+    if (errs.length) fail(where, `errori JavaScript: ${errs.join(" | ")}`);
+    await ctx.close();
+  }
+
   await browser.close();
   server.close();
 
@@ -132,5 +163,5 @@ async function heroHeights(page) {
     console.error(`Controllo FALLITO (${failures.length}):\n${failures.join("\n")}`);
     process.exit(1);
   }
-  console.log(`Controllo ok: ${PAGES.length} pagine × ${VIEWPORTS.length} larghezze, CSS assente, riduci movimento.`);
+  console.log(`Controllo ok: ${PAGES.length} pagine × ${VIEWPORTS.length} larghezze, CSS assente, riduci movimento, schermata d'ingresso.`);
 })().catch((e) => { console.error(e); process.exit(1); });

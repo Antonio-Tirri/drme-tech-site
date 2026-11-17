@@ -210,5 +210,10 @@
   },
   "footer": {
     "copy": "© 2026 drme.tech · Elettronica su misura per veicoli unici"
+  },
+  "splash": {
+    "click": "Clicca per entrare",
+    "tap": "Tocca per entrare",
+    "label": "Entra nel sito drommer electronics"
   }
 }
