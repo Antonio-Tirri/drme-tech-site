@@ -210,5 +210,10 @@
   },
   "footer": {
     "copy": "© 2026 drme.tech · Custom electronics for one-of-a-kind vehicles"
+  },
+  "splash": {
+    "click": "Click to enter",
+    "tap": "Tap to enter",
+    "label": "Enter the drommer electronics website"
   }
 }
