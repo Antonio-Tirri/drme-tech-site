@@ -8,14 +8,55 @@
   <p class="eyebrow">{{home.introEyebrow}}</p>
   <h2>{{home.introTitle}}</h2>
   <p class="lead">{{home.introText}}</p>
-  <div class="grid3">
-    {{#each home.pillars}}
-    <div class="tile"><div class="ico">{{{svg .icon}}}</div><h3>{{.title}}</h3><p>{{.text}}</p></div>
+  <ol class="blocks">
+    {{#each home.blocks}}
+    <li class="block" tabindex="0"><span class="block-n">{{.n}}</span><h3>{{.title}}</h3><p>{{.text}}</p></li>
     {{/each}}
+  </ol>
+</div></section>
+
+<section class="car-sec" data-car><div class="wrap car-grid">
+  <div>
+    <p class="eyebrow">{{home.carEyebrow}}</p>
+    <h2>{{home.carTitle}}</h2>
+    <p class="lead">{{home.carText}}</p>
   </div>
+  <svg class="car" viewBox="0 0 640 300" role="img" aria-label="{{home.carAlt}}">
+    <path class="car-body" d="M38 214 C40 186 62 168 110 160 L178 150 C206 120 248 94 300 86 C352 80 404 84 446 104 L512 138 C566 146 600 166 604 214 L540 214 A40 40 0 0 0 460 214 L200 214 A40 40 0 0 0 120 214 Z"/>
+    <path class="car-body" d="M206 148 C232 122 266 104 306 100 L386 100 C412 104 436 116 456 136 Z"/>
+    <path class="car-body" d="M330 100 L326 146"/>
+    <circle class="car-body" cx="160" cy="218" r="38"/><circle class="car-body" cx="160" cy="218" r="16"/>
+    <circle class="car-body" cx="500" cy="218" r="38"/><circle class="car-body" cx="500" cy="218" r="16"/>
+    <path class="wire" d="M300 176 H124 V182"/>
+    <path class="wire" d="M300 176 V124 H262"/>
+    <path class="wire" d="M300 176 H418"/>
+    <path class="wire" d="M418 176 H560 V184"/>
+    <path class="wire" d="M300 176 V200 H372"/>
+    <rect class="node" x="290" y="166" width="20" height="20" rx="3"/>
+    <rect class="node" x="252" y="114" width="20" height="20" rx="3"/>
+    <rect class="node" x="114" y="176" width="20" height="14" rx="3"/>
+    <rect class="node" x="550" y="178" width="20" height="14" rx="3"/>
+    <rect class="node" x="408" y="166" width="20" height="20" rx="3"/>
+    <text class="car-label" x="300" y="246" text-anchor="middle">{{home.carLabels.ecu}}</text>
+    <text class="car-label" x="262" y="68" text-anchor="middle">{{home.carLabels.dash}}</text>
+    <text class="car-label" x="70" y="150" text-anchor="middle">{{home.carLabels.front}}</text>
+    <text class="car-label" x="586" y="122" text-anchor="end">{{home.carLabels.rear}}</text>
+    <text class="car-label" x="418" y="246" text-anchor="middle">{{home.carLabels.bus}}</text>
+  </svg>
 </div></section>
 
 <section class="alt"><div class="wrap">
+  <p class="eyebrow">{{home.processEyebrow}}</p>
+  <h2>{{home.processTitle}}</h2>
+  <ol class="timeline" data-timeline>
+    {{#each metodo.steps}}
+    <li><span class="tl-dot"></span><h3>{{.title}}</h3></li>
+    {{/each}}
+  </ol>
+  <p><a class="more" href="{{{page.base}}}/metodo/">{{home.processLink}} →</a></p>
+</div></section>
+
+<section><div class="wrap">
   <h2>{{home.whyTitle}}</h2>
   <div class="why">
     {{#each home.why}}

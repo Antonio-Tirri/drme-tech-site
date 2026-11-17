@@ -26,23 +26,47 @@
     "introEyebrow": "From idea to a working vehicle",
     "introTitle": "One partner for the entire electrical system",
     "introText": "We design and integrate electrical and electronic systems for special vehicles: one-offs, prototypes, show cars, motorsport and limited series. From the circuit board to the harness, from firmware to road-ready.",
-    "pillars": [
+    "blocks": [
       {
-        "icon": "chip",
-        "title": "Hardware",
-        "text": "Custom electronic boards: schematics, PCB layout, prototypes and small production runs."
+        "n": "01",
+        "title": "PCB",
+        "text": "Schematics and layout in KiCad, 3D models for mechanical design, prototypes and small production runs."
       },
       {
-        "icon": "code",
+        "n": "02",
         "title": "Firmware",
-        "text": "Embedded software on microcontrollers, CAN and LIN networks, diagnostics and test tools."
+        "text": "Software on STM32: inputs, outputs, motors, lighting animations and safety logic."
       },
       {
-        "icon": "wave",
+        "n": "03",
+        "title": "Harnesses",
+        "text": "Electrical architecture, diagrams, cables, protections and connectors, with assembly documentation."
+      },
+      {
+        "n": "04",
+        "title": "CAN / LIN networks",
+        "text": "Message matrix, gateways, integration with existing ECUs and protocol decoding."
+      },
+      {
+        "n": "05",
         "title": "Integration",
-        "text": "Vehicle harnesses, lighting, user interfaces and testing directly on the car."
+        "text": "Installation on the vehicle, testing, diagnosis and support through to delivery."
       }
     ],
+    "carEyebrow": "Inside the vehicle",
+    "carTitle": "The electronics that connect everything",
+    "carText": "Scroll down: control units, networks and harnesses light up one by one.",
+    "carLabels": {
+      "ecu": "Control unit",
+      "dash": "Switch panel",
+      "front": "Front lights",
+      "rear": "Rear lights",
+      "bus": "CAN network"
+    },
+    "carAlt": "Diagram of a vehicle with control units, CAN network and lights connected by the harness",
+    "processEyebrow": "Process",
+    "processTitle": "From brief to road",
+    "processLink": "How we work",
     "whyTitle": "Why work with us",
     "why": [
       {
@@ -154,7 +178,35 @@
     "copy": "Copy",
     "copied": "Copied",
     "placeLabel": "Location",
-    "place": "Turin, Italy"
+    "place": "Turin, Italy",
+    "form": {
+      "name": "Name and company",
+      "email": "Your email",
+      "type": "Project type",
+      "types": [
+        {
+          "v": "Prototype or concept car"
+        },
+        {
+          "v": "Coachbuilding or one-off"
+        },
+        {
+          "v": "Limited series"
+        },
+        {
+          "v": "Motorsport"
+        },
+        {
+          "v": "Other"
+        }
+      ],
+      "timing": "Timeline",
+      "message": "Briefly describe the vehicle and what you need",
+      "submit": "Prepare the email",
+      "note": "The button opens your email app with the message already filled in. Or write to us directly at the address above.",
+      "subject": "New project",
+      "title": "Write to us in a minute"
+    }
   },
   "footer": {
     "copy": "© 2026 drme.tech · Custom electronics for one-of-a-kind vehicles"

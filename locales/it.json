@@ -26,23 +26,47 @@
     "introEyebrow": "Dall'idea al veicolo che funziona",
     "introTitle": "Un unico interlocutore per tutta la parte elettrica",
     "introText": "Progettiamo e integriamo sistemi elettrici ed elettronici per veicoli speciali: one-off, prototipi, show car, motorsport e serie limitate. Dalla scheda elettronica al cablaggio, dal firmware alla messa in strada.",
-    "pillars": [
+    "blocks": [
       {
-        "icon": "chip",
-        "title": "Hardware",
-        "text": "Schede elettroniche custom: schematico, PCB, prototipi e piccole produzioni."
+        "n": "01",
+        "title": "PCB",
+        "text": "Schematico e layout in KiCad, modelli 3D per la meccanica, prototipi e piccole produzioni."
       },
       {
-        "icon": "code",
+        "n": "02",
         "title": "Firmware",
-        "text": "Software embedded su microcontrollori, reti CAN e LIN, diagnosi e strumenti di test."
+        "text": "Software su STM32: ingressi, uscite, motori, animazioni luminose e logiche di sicurezza."
       },
       {
-        "icon": "wave",
+        "n": "03",
+        "title": "Cablaggi",
+        "text": "Architettura elettrica, schemi, cavi, protezioni e connettori, con la documentazione per l'assemblaggio."
+      },
+      {
+        "n": "04",
+        "title": "Reti CAN / LIN",
+        "text": "Matrice dei messaggi, gateway, integrazione con centraline esistenti e decodifica dei protocolli."
+      },
+      {
+        "n": "05",
         "title": "Integrazione",
-        "text": "Cablaggi veicolo, illuminazione, interfacce utente e collaudo direttamente sull'auto."
+        "text": "Montaggio sul veicolo, collaudo, diagnosi e supporto fino alla consegna."
       }
     ],
+    "carEyebrow": "Dentro il veicolo",
+    "carTitle": "L'elettronica che collega tutto",
+    "carText": "Scorri la pagina: centraline, reti e cablaggi si accendono uno alla volta.",
+    "carLabels": {
+      "ecu": "Centralina",
+      "dash": "Quadro comandi",
+      "front": "Luci anteriori",
+      "rear": "Luci posteriori",
+      "bus": "Rete CAN"
+    },
+    "carAlt": "Schema di un veicolo con centraline, rete CAN e luci collegate dal cablaggio",
+    "processEyebrow": "Processo",
+    "processTitle": "Dal brief alla strada",
+    "processLink": "Come lavoriamo",
     "whyTitle": "Perché lavorare con noi",
     "why": [
       {
@@ -154,7 +178,35 @@
     "copy": "Copia",
     "copied": "Copiato",
     "placeLabel": "Sede",
-    "place": "Torino, Italia"
+    "place": "Torino, Italia",
+    "form": {
+      "name": "Nome e azienda",
+      "email": "La tua email",
+      "type": "Tipo di progetto",
+      "types": [
+        {
+          "v": "Prototipo o concept car"
+        },
+        {
+          "v": "Coachbuilding o fuoriserie"
+        },
+        {
+          "v": "Serie limitata"
+        },
+        {
+          "v": "Motorsport"
+        },
+        {
+          "v": "Altro"
+        }
+      ],
+      "timing": "Tempistiche",
+      "message": "Descrivi brevemente il veicolo e cosa ti serve",
+      "submit": "Prepara l'email",
+      "note": "Il pulsante apre il tuo programma di posta con il messaggio già compilato. In alternativa scrivici direttamente all'indirizzo qui sopra.",
+      "subject": "Nuovo progetto",
+      "title": "Scrivici in un minuto"
+    }
   },
   "footer": {
     "copy": "© 2026 drme.tech · Elettronica su misura per veicoli unici"

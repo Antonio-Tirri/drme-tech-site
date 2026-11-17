@@ -15,3 +15,18 @@
     </div>
   </div>
 </div></section>
+
+<section class="alt"><div class="wrap">
+  <h2>{{contatti.form.title}}</h2>
+  <form class="quick" data-mailto="{{contatti.email}}" data-subject="{{contatti.form.subject}}">
+    <label>{{contatti.form.name}}<input name="name" autocomplete="organization" required></label>
+    <label>{{contatti.form.email}}<input name="email" type="email" autocomplete="email" required></label>
+    <label>{{contatti.form.type}}<select name="type">
+      {{#each contatti.form.types}}<option>{{.v}}</option>{{/each}}
+    </select></label>
+    <label>{{contatti.form.timing}}<input name="timing"></label>
+    <label class="full">{{contatti.form.message}}<textarea name="message" rows="5" required></textarea></label>
+    <button class="btn full-start" type="submit">{{contatti.form.submit}}</button>
+    <p class="form-note full">{{contatti.form.note}}</p>
+  </form>
+</div></section>
