@@ -30,8 +30,14 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="/assets/styles.css">
+<script>/* Schermata d'ingresso: una volta per sessione. Se lo script non parte entro 4 s, il sito resta comunque usabile. */
+try{if(!sessionStorage.getItem("drme-ingresso")){document.documentElement.classList.add("ingresso-on");setTimeout(function(){if(!window.DRME_SPLASH)document.documentElement.classList.remove("ingresso-on")},4000)}}catch(e){}</script>
 </head>
 <body data-brand="{{meta.brand}}">
+<div class="ingresso" id="ingresso" data-tap="{{splash.tap}}">
+  <canvas aria-hidden="true"></canvas>
+  <button type="button" aria-label="{{splash.label}}"><span class="ingresso-hint">{{splash.click}}</span></button>
+</div>
 <a class="skip" href="#main">{{meta.skip}}</a>
 <header class="top"><div class="wrap">
   <a href="{{{page.homeHref}}}" class="brand"><img src="/assets/logo.svg" alt="{{meta.brand}}" width="2558" height="862"></a>
@@ -42,6 +48,8 @@
 {{{page.body}}}
 </main>
 <footer><div class="wrap"><span>{{footer.copy}}</span><img src="/assets/favicon.svg" alt="" width="28" height="28"></div></footer>
+<script src="/assets/logo-cells.js" defer></script>
+<script src="/assets/splash.js" defer></script>
 <script src="/assets/site.js" defer></script>
 <script src="/assets/hero-fx.js" defer></script>
 </body>
